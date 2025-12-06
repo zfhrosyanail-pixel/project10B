@@ -1,145 +1,162 @@
-<?php
-// File proses_post_sanitasi.php
-
-// Fungsi sanitasi (untuk mencegah XSS)
-function bersihkan($data) {
-    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8'); 
-}
-
-// ----------------------------------------------------
-// VALIDASI SISI SERVER (Nama & Umur)
-// ----------------------------------------------------
-
-// Ambil data mentah (raw) dari POST
-$nama_raw = trim($_POST['nama'] ?? '');
-$umur_raw = trim($_POST['umur'] ?? '');
-
-// 1. Validasi Nama
-if (empty($nama_raw)) {
-    die("Error: Nama tidak boleh kosong.");
-}
-// Mengecek apakah Nama mengandung angka (0-9).
-if (preg_match('/[0-9]/', $nama_raw)) {
-    die("Error: Nama tidak boleh diisi angka.");
-}
-
-// 2. Validasi Umur
-if (empty($umur_raw)) {
-    die("Error: Umur tidak boleh kosong.");
-}
-// Mengecek apakah Umur adalah nilai numerik (hanya angka)
-if (!is_numeric($umur_raw) || !ctype_digit($umur_raw)) {
-    die("Error: Umur harus diisi dengan angka bilangan bulat.");
-}
-
-// ----------------------------------------------------
-// SANITASI DATA (Setelah Lolos Validasi)
-// ----------------------------------------------------
-
-// Sanitasi data yang sudah lolos validasi
-$nim = bersihkan($_POST['nim']);
-$nama = bersihkan($nama_raw); // Menggunakan variabel yang sudah divalidasi dan disanitasi
-$umur = bersihkan($umur_raw); // Menggunakan variabel yang sudah divalidasi dan disanitasi
-$tempat_lahir = bersihkan($_POST['tempat_lahir']);
-$tanggal_lahir = bersihkan($_POST['tanggal_lahir']);
-$no_hp = bersihkan($_POST['no_hp']); 
-$alamat = bersihkan($_POST['alamat']);
-$email = bersihkan($_POST['email']);
-
-// Sanitasi input lainnya
-$kota = bersihkan($_POST['kota']);
-$jk = isset($_POST['jk']) ? bersihkan($_POST['jk']) : "-";
-$status = isset($_POST['status']) ? bersihkan($_POST['status']) : "";
-
-// Sanitasi checkbox hobi
-$hobi_list = [];
-if (!empty($_POST['hobi'])) {
-    foreach ($_POST['hobi'] as $h) {
-        $hobi_list[] = bersihkan($h);
-    }
-}
-$hobi_output = implode(", ", $hobi_list);
-?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasil Data POST</title>
+    <title>Hasil Input POST</title>
     <style>
-        /* CSS Dasar untuk kerapian dan responsivitas */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
+            max-width: 800px;
+            margin: 20px auto;
             padding: 20px;
-            background-color: #f4f4f9;
-            color: #333;
+             background:  linear-gradient(135deg, #94f4ccff 0%, #21c9efff 100%);
         }
         .container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: #fff;
-            padding: 20px 40px;
+            background-color: white;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h2 {
-            color: #0056b3;
-            border-bottom: 2px solid #0056b3;
+            color: #333;
+            border-bottom: 2px solid #94f4ccff;
             padding-bottom: 10px;
-            margin-bottom: 20px;
-            text-align: center;
         }
-        p {
-            line-height: 1.6;
-            padding: 5px 0;
-            border-bottom: 1px dotted #ccc;
-            display: flex;
+        .data-item {
+            margin: 10px 0;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #94f4ccff;
         }
-        p b {
-            display: inline-block;
-            width: 150px;
+        .label {
+            font-weight: bold;
             color: #555;
-            flex-shrink: 0;
         }
-        
-        /* Responsiveness */
-        @media (max-width: 600px) {
-            .container {
-                padding: 15px;
-                margin: 20px;
-            }
-            p b {
-                width: 120px;
-            }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #94f4ccff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #94f4ccff;
+        }
+        .error {
+            color: red;
+            background-color: #ffe6e6;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid red;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Hasil Input Data Mahasiswa (Metode POST)</h2>
-        <p><b>NIM:</b> <?= $nim ?></p>
-        <p><b>Nama:</b> <?= $nama ?></p>
-        <p><b>Umur:</b> <?= $umur ?></p>
-        <p><b>Tempat Lahir:</b> <?= $tempat_lahir ?></p>
-        <p><b>Tanggal Lahir:</b> <?= $tanggal_lahir ?></p>
-        <p><b>No HP:</b> <?= $no_hp ?></p>
-        <p><b>Alamat:</b> <?= $alamat ?></p>
-        <p><b>Kota:</b> 
-            <?php
-            if ($kota == "Semarang") echo "Semarang";
-            elseif ($kota == "Solo") echo "Solo";
-            elseif ($kota == "Brebes") echo "Brebes";
-            elseif ($kota == "Kudus") echo "Kudus";
-            elseif ($kota == "Demak") echo "Demak";
-            else echo "Salatiga";
-            ?>
-        </p>
-        <p><b>Jenis Kelamin:</b> <?= $jk ?></p>
-        <p><b>Status:</b> <?= $status ?></p>
-        <p><b>Hobi:</b> <?= $hobi_output ?></p>
-        <p><b>Email:</b> <?= $email ?></p>
+        <h2>Data Yang Dikirim Dengan Metode POST</h2>
+        <?php
+        // Fungsi untuk membersihkan input
+        function sanitize($data) {
+            if (is_array($data)) {
+                return array_map('sanitize', $data);
+            }
+            return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+        }
+
+        // Cek apakah data POST ada
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            
+            // Menampilkan NIM
+            $nim = isset($_POST['nim']) ? sanitize($_POST['nim']) : '';
+            echo '<div class="data-item"><span class="label">NIM:</span> ' . $nim . '</div>';
+            
+            // Menampilkan Nama
+            $nama = isset($_POST['nama']) ? sanitize($_POST['nama']) : '';
+            echo '<div class="data-item"><span class="label">Nama:</span> ' . $nama . '</div>';
+            
+            // Menampilkan Tempat Lahir
+            $tempat_lahir = isset($_POST['tempat_lahir']) ? sanitize($_POST['tempat_lahir']) : '';
+            echo '<div class="data-item"><span class="label">Tempat Lahir:</span> ' . $tempat_lahir . '</div>';
+            
+            // Menampilkan Tanggal Lahir
+            $tanggal_lahir = isset($_POST['tanggal_lahir']) ? sanitize($_POST['tanggal_lahir']) : '';
+            echo '<div class="data-item"><span class="label">Tanggal Lahir:</span> ' . $tanggal_lahir . '</div>';
+            
+            // Menampilkan Alamat
+            $alamat = isset($_POST['alamat']) ? sanitize($_POST['alamat']) : '';
+            echo '<div class="data-item"><span class="label">Alamat:</span> ' . nl2br($alamat) . '</div>';
+            
+            // Menampilkan Kota
+            $kota = isset($_POST['kota']) ? sanitize($_POST['kota']) : '';
+            $daftar_kota = ["Semarang", "Solo", "Salatiga", "Kudus", "Pekalongan"];
+            if (in_array($kota, $daftar_kota)) {
+                echo '<div class="data-item"><span class="label">Kota:</span> ' . $kota . '</div>';
+            } else {
+                echo '<div class="data-item"><span class="label">Kota:</span> Tidak dipilih</div>';
+            }
+            
+            // Menampilkan Jenis Kelamin
+            $jk = isset($_POST['jk']) ? sanitize($_POST['jk']) : '';
+            if ($jk == "Laki-laki") {
+                echo '<div class="data-item"><span class="label">Jenis Kelamin:</span> Laki-laki</div>';
+            } elseif ($jk == "Perempuan") {
+                echo '<div class="data-item"><span class="label">Jenis Kelamin:</span> Perempuan</div>';
+            } else {
+                echo '<div class="data-item"><span class="label">Jenis Kelamin:</span> Tidak dipilih</div>';
+            }
+            
+            // Menampilkan Email
+            $email = isset($_POST['email']) ? sanitize($_POST['email']) : '';
+            echo '<div class="data-item"><span class="label">Email:</span> ' . $email . '</div>';
+            
+            // Menampilkan No HP
+            $no_hp = isset($_POST['no_hp']) ? sanitize($_POST['no_hp']) : '';
+            echo '<div class="data-item"><span class="label">No HP:</span> ' . $no_hp . '</div>';
+            
+            // Menampilkan Umur
+            $umur = isset($_POST['umur']) ? sanitize($_POST['umur']) : '';
+            echo '<div class="data-item"><span class="label">Umur:</span> ' . $umur . '</div>';
+            
+            // Menampilkan Status
+            $status = isset($_POST['status']) ? sanitize($_POST['status']) : '';
+            if ($status == "Kawin") {
+                echo '<div class="data-item"><span class="label">Status:</span> Kawin</div>';
+            } elseif ($status == "Belum Kawin") {
+                echo '<div class="data-item"><span class="label">Status:</span> Belum Kawin</div>';
+            } else {
+                echo '<div class="data-item"><span class="label">Status:</span> Tidak dipilih</div>';
+            }
+            
+            // Menampilkan Hobi (Array)
+            if (isset($_POST['hobi']) && is_array($_POST['hobi']) && count($_POST['hobi']) > 0) {
+                $hobi_array = sanitize($_POST['hobi']);
+                echo '<div class="data-item"><span class="label">Hobi:</span> ' . implode(", ", $hobi_array) . '</div>';
+                
+                // Menampilkan detail array hobi
+                echo '<div class="data-item">';
+                echo '<span class="label">Detail Array Hobi:</span><br>';
+                echo '<ul style="margin: 10px 0; padding-left: 20px;">';
+                foreach ($hobi_array as $index => $hobi) {
+                    echo '<li>Hobi[' . $index . '] = ' . $hobi . '</li>';
+                }
+                echo '</ul>';
+                echo '<span style="color: #666; font-size: 0.9em;">Total hobi terpilih: ' . count($hobi_array) . '</span>';
+                echo '</div>';
+            } else {
+                echo '<div class="data-item"><span class="label">Hobi:</span> Tidak ada hobi yang dipilih</div>';
+            }
+            
+            echo '<a href="javascript:history.back()" class="back-button">Kembali ke Form</a>';
+            
+        } else {
+            echo '<div class="error">Tidak ada data yang dikirim melalui metode POST.</div>';
+            echo '<a href="javascript:history.back()" class="back-button">Kembali ke Form</a>';
+        }
+        ?>
     </div>
 </body>
 </html>
